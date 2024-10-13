@@ -1,4 +1,5 @@
 package com.amorempatinhas.Application.api;
+
 import com.amorempatinhas.Application.model.AnimalModel;
 import com.amorempatinhas.Application.service.AnimalService;
 import io.swagger.v3.oas.annotations.Operation;

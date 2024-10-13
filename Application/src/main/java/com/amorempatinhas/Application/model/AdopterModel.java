@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement
@@ -24,5 +25,12 @@ public class AdopterModel {
     @JacksonXmlProperty(localName = "animalIds")
     @XmlElementWrapper(name = "animalIds")
     @XmlElement(name = "integer")
-    private List<Integer> animalIds;
+    private List<Integer> animalIds = new ArrayList<>();
+
+    public void addAdoptedAnimal(Integer id) {
+        if (animalIds == null) {
+            animalIds = new ArrayList<>();
+        }
+        animalIds.add(id);
+    }
 }
