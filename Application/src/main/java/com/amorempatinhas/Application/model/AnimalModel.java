@@ -19,13 +19,18 @@ public class AnimalModel {
     private String breed;
     private int adopterId;
 
-    // Metodo para associar o animal ao adotante (não precisa de injeção de dependência)
+    // MEtodo para associar o animal ao adotante
     public void associateWithAdopter(AdopterService adopterService) {
         AdopterModel adopter = adopterService.getAdopter(adopterId); // Obtém o adotante pelo ID
         if (adopter != null) {
-            adopter.addAdoptedAnimal(this.getId()); // Adiciona o animal à lista de IDs do adotante
+            // Verifica se o adotante já possui este animal
+            if (!adopter.hasAnimal(this.id)) {
+                adopter.addAdoptedAnimal(this.id); // Adiciona o animal à lista de IDs do adotante
+            } else {
+                throw new IllegalArgumentException("Este animal já está associado ao adotante com ID: " + adopterId);
+            }
         } else {
-            System.out.println("Adopter not found with ID: " + adopterId);
+            throw new IllegalArgumentException("Adotante não encontrado com ID: " + adopterId);
         }
     }
 }

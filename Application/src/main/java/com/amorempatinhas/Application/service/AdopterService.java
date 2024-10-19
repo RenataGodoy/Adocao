@@ -1,4 +1,5 @@
 package com.amorempatinhas.Application.service;
+
 import com.amorempatinhas.Application.model.AdopterModel;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +15,22 @@ public class AdopterService {
         adopterList = new ArrayList<>();
 
         // Adicionando exemplos de adotantes
-        AdopterModel adopter1 = new AdopterModel(1, "Renata", "123.456.789-00", "renata@gmail.com", "9999-9999", new ArrayList<>(Arrays.asList(1, 2)));
-        AdopterModel adopter2 = new AdopterModel(2, "Maria", "987.654.321-00", "maria@gmail.com", "8888-8888", new ArrayList<>(Arrays.asList(3)));
+        AdopterModel adopter1 = new AdopterModel(1, "Renata", "123.456.789-00", "renata@gmail.com", "9999-9999", new ArrayList<>(Arrays.asList(3)));
+        AdopterModel adopter2 = new AdopterModel(2, "Maria", "987.654.321-00", "maria@gmail.com", "8888-8888", new ArrayList<>(Arrays.asList(1, 2)));
 
         adopterList.addAll(Arrays.asList(adopter1, adopter2));
-
     }
 
     public void addAnimalToAdopter(int adopterId, int animalId) {
         AdopterModel adopter = getAdopter(adopterId);
         if (adopter != null) {
-            adopter.addAdoptedAnimal(animalId);
+            if (!adopter.getAnimalIds().contains(animalId)) {
+                adopter.addAdoptedAnimal(animalId);
+            } else {
+                throw new IllegalArgumentException("Erro: O animal com ID " + animalId + " já está adotado por este adotante.");
+            }
+        } else {
+            throw new IllegalArgumentException("Adotante com ID " + adopterId + " não encontrado.");
         }
     }
 
@@ -39,7 +45,13 @@ public class AdopterService {
         return adopterList;
     }
 
-    public static void createAdopter(AdopterModel adopter) {
+    public void createAdopter(AdopterModel adopter) {
+        // Verifica se já existe um adotante com o mesmo ID
+        if (getAdopter(adopter.getId()) != null) {
+            throw new IllegalArgumentException("Erro: Já existe um adotante com o ID " + adopter.getId());
+        }
+
+        // Adiciona o adotante à lista
         adopterList.add(adopter);
     }
 
@@ -61,5 +73,10 @@ public class AdopterService {
         }
     }
 
+    public boolean isAnimalAlreadyAdopted(Integer animalId) {
+        // Verifica se algum adotante possui o animalId na lista de IDs de animais adotados
+        return adopterList.stream()
+                .anyMatch(adopter -> adopter.getAnimalIds().contains(animalId));
+    }
 
 }

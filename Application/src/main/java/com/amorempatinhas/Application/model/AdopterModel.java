@@ -1,4 +1,5 @@
 package com.amorempatinhas.Application.model;
+
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -22,6 +23,7 @@ public class AdopterModel {
     private String cpf;
     private String email;
     private String phone;
+
     @JacksonXmlProperty(localName = "animalIds")
     @XmlElementWrapper(name = "animalIds")
     @XmlElement(name = "integer")
@@ -31,6 +33,15 @@ public class AdopterModel {
         if (animalIds == null) {
             animalIds = new ArrayList<>();
         }
-        animalIds.add(id);
+        // Adiciona apenas se o ID não estiver presente na lista
+        if (!animalIds.contains(id)) {
+            animalIds.add(id);
+        } else {
+            throw new IllegalArgumentException("O ID do animal já está associado a este adotante.");
+        }
+    }
+
+    public boolean hasAnimal(Integer id) {
+        return animalIds.contains(id);
     }
 }

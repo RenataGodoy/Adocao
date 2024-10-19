@@ -22,12 +22,16 @@ public class AnimalApi {
 
     @Operation(summary = "Obter Animal por ID", description = "Recuperar as informações de um animal específico")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml"})
-    public ResponseEntity<AnimalModel> getAnimal(@PathVariable Integer id) {
-        AnimalModel animal = animalService.getAnimal(id);
-        if (animal == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(animal);
+    public ResponseEntity<?> getAnimal(@PathVariable Integer id) {
+        try {
+            AnimalModel animal = animalService.getAnimal(id);
+            if (animal == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("O animal com ID " + id + " não existe.");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(animal);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao buscar o animal: " + e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body(animal);
     }
 
     @Operation(summary = "Obter Todos os Animais", description = "Recuperar uma lista de todos os animais")
@@ -40,31 +44,44 @@ public class AnimalApi {
     @PostMapping(consumes = {"application/json", "application/xml"})
     public ResponseEntity<String> createAnimal(@RequestBody AnimalModel animal) {
         try {
+            // Verifica se já existe um animal com o mesmo ID
+            if (animalService.getAnimal(animal.getId()) != null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Já existe um animal com o ID " + animal.getId());
+            }
             animalService.createAnimal(animal);
             return ResponseEntity.status(HttpStatus.CREATED).body("Animal criado com sucesso");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na criação do animal: " + e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na criação do animal: " + e.getMessage());
         }
     }
 
     @Operation(summary = "Deletar um Animal", description = "Remover um animal do sistema")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAnimal(@PathVariable Integer id) {
-        if (animalService.getAnimal(id) == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal não encontrado para DELETE");
+        try {
+            animalService.deleteAnimal(id);
+            return ResponseEntity.status(HttpStatus.OK).body("Animal deletado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ocorreu um erro ao tentar excluir o animal: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao tentar excluir o animal: " + e.getMessage());
         }
-        animalService.deleteAnimal(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Animal deletado com sucesso");
     }
 
     @Operation(summary = "Atualizar um Animal", description = "Modificar as informações de um animal existente")
     @PutMapping(consumes = {"application/json", "application/xml"})
     public ResponseEntity<String> editAnimal(@RequestBody AnimalModel animal) {
         try {
+            // Verifica se o animal existe
+            if (animalService.getAnimal(animal.getId()) == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("O animal com ID " + animal.getId() + " não existe.");
+            }
             animalService.editAnimal(animal);
             return ResponseEntity.status(HttpStatus.OK).body("Animal atualizado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na atualização do animal: " + e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na atualização do animal: " + e.getMessage());
         }
     }
 }
