@@ -1,6 +1,7 @@
 package com.amorempatinhas.Application.api;
 
 import com.amorempatinhas.Application.model.AdopterModel;
+import com.amorempatinhas.Application.model.AnimalModel;
 import com.amorempatinhas.Application.service.AdopterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,20 +41,18 @@ public class AdopterApi {
     @PostMapping(consumes = {"application/json", "application/xml"})
     public ResponseEntity<String> createAdopter(@RequestBody AdopterModel adopter) {
         try {
-            // Verifica se já existe um adotante com o mesmo ID
             AdopterModel existingAdopter = adopterService.getAdopter(adopter.getId());
             if (existingAdopter != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Já existe um adotante com o ID " + adopter.getId());
             }
 
-            // Verifica se os animais já estão associados a outro adotante
-            for (Integer animalId : adopter.getAnimalIds()) {
-                if (adopterService.isAnimalAlreadyAdopted(animalId)) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: O animal com ID " + animalId + " já está adotado por outro adotante.");
+            for (AnimalModel animal : adopter.getAnimals()) {
+                if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Erro: O animal com ID " + animal.getId() + " já está adotado por outro adotante.");
                 }
             }
 
-            // Cria o adotante
             adopterService.createAdopter(adopter);
             return ResponseEntity.status(HttpStatus.CREATED).body("Adotante criado com sucesso");
         } catch (IllegalArgumentException e) {
@@ -83,18 +82,16 @@ public class AdopterApi {
     @PutMapping(consumes = {"application/json", "application/xml"})
     public ResponseEntity<String> editAdopter(@RequestBody AdopterModel adopter) {
         try {
-            // Verifica se o adotante existe
             if (adopterService.getAdopter(adopter.getId()) == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + adopter.getId() + " não encontrado.");
             }
 
-            // Atualiza o adotante
             adopterService.editAdopter(adopter);
             return ResponseEntity.status(HttpStatus.OK).body("Adotante atualizado com sucesso!");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na atualização do adotante: " + e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na atualização do adotante: " + e.getMessage());
         }
     }
 }
