@@ -25,7 +25,7 @@ public class AnimalModel {
     @JoinColumn(name = "adopter_id") // Nome da coluna que armazena o ID do adotante
     private AdopterModel adopter;
 
-    // Método para associar o animal ao adotante
+    // Metodo para associar o animal ao adotante
     public void associateWithAdopter(AdopterModel adopter) {
         this.adopter = adopter; // Associa o animal ao adotante
     }
