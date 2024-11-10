@@ -1,6 +1,6 @@
 package com.amorempatinhas.Application.service;
 
-import com.amorempatinhas.Application.Dao.AnimalDao;
+import com.amorempatinhas.Application.dao.AnimalDao;
 import com.amorempatinhas.Application.model.AnimalModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

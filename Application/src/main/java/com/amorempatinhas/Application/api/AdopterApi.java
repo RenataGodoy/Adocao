@@ -6,6 +6,7 @@ import com.amorempatinhas.Application.service.AdopterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/adopters")
+@Validated
 public class AdopterApi {
     private final AdopterService adopterService;
 
@@ -23,29 +25,30 @@ public class AdopterApi {
 
     @Operation(summary = "Obter Adotante por ID", description = "Recuperar as informações de um adotante específico")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml"})
-    public ResponseEntity<?> getAdopter(@PathVariable Integer id) {
+    public ResponseEntity<AdopterModel> getAdopter(@PathVariable Integer id) {
         AdopterModel adopter = adopterService.getAdopter(id);
         if (adopter == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + id + " não encontrado.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(adopter);
+        return ResponseEntity.ok(adopter);
     }
 
     @Operation(summary = "Obter Todos os Adotantes", description = "Recuperar uma lista de todos os adotantes")
     @GetMapping
     public List<AdopterModel> getAdopters() {
-        return adopterService.getAdopters();
+        return adopterService.getAllAdopters();
     }
 
     @Operation(summary = "Criar um novo Adotante", description = "Adicionar um novo adotante ao sistema")
     @PostMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> createAdopter(@RequestBody AdopterModel adopter) {
+    public ResponseEntity<String> createAdopter(@RequestBody @Validated AdopterModel adopter) {
         try {
-            AdopterModel existingAdopter = adopterService.getAdopter(adopter.getId());
-            if (existingAdopter != null) {
+            // Verifica se já existe um adotante com o mesmo ID
+            if (adopterService.getAdopter(adopter.getId()) != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Já existe um adotante com o ID " + adopter.getId());
             }
 
+            // Verifica se os animais já estão adotados
             for (AnimalModel animal : adopter.getAnimals()) {
                 if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -55,8 +58,6 @@ public class AdopterApi {
 
             adopterService.createAdopter(adopter);
             return ResponseEntity.status(HttpStatus.CREATED).body("Adotante criado com sucesso");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na criação do adotante: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na criação do adotante: " + e.getMessage());
         }
@@ -65,12 +66,12 @@ public class AdopterApi {
     @Operation(summary = "Deletar um Adotante", description = "Remover um adotante do sistema")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAdopter(@PathVariable Integer id) {
-        AdopterModel adopter = adopterService.getAdopter(id);
-        if (adopter == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante não encontrado para excluir");
-        }
-
         try {
+            AdopterModel adopter = adopterService.getAdopter(id);
+            if (adopter == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante não encontrado para excluir");
+            }
+
             adopterService.deleteAdopter(id);
             return ResponseEntity.status(HttpStatus.OK).body("Adotante deletado com sucesso");
         } catch (Exception e) {
@@ -80,7 +81,7 @@ public class AdopterApi {
 
     @Operation(summary = "Atualizar um Adotante", description = "Modificar as informações de um adotante existente")
     @PutMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> editAdopter(@RequestBody AdopterModel adopter) {
+    public ResponseEntity<String> editAdopter(@RequestBody @Validated AdopterModel adopter) {
         try {
             if (adopterService.getAdopter(adopter.getId()) == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + adopter.getId() + " não encontrado.");
@@ -88,8 +89,6 @@ public class AdopterApi {
 
             adopterService.editAdopter(adopter);
             return ResponseEntity.status(HttpStatus.OK).body("Adotante atualizado com sucesso!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na atualização do adotante: " + e.getMessage());
         }

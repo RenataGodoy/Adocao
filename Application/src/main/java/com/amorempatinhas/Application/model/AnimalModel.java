@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AnimalModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -21,12 +20,7 @@ public class AnimalModel {
     private int age;
     private String breed;
 
-    @ManyToOne // Relacionamento muitos-para-um
-    @JoinColumn(name = "adopter_id") // Nome da coluna que armazena o ID do adotante
+    @ManyToOne
+    @JoinColumn(name = "adopter_id")
     private AdopterModel adopter;
-
-    // Metodo para associar o animal ao adotante
-    public void associateWithAdopter(AdopterModel adopter) {
-        this.adopter = adopter; // Associa o animal ao adotante
-    }
 }

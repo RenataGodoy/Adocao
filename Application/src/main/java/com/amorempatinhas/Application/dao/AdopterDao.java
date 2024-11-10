@@ -1,4 +1,4 @@
-package com.amorempatinhas.Application.Dao;
+package com.amorempatinhas.Application.dao;
 
 import com.amorempatinhas.Application.model.AdopterModel;
 import org.springframework.data.jpa.repository.JpaRepository;
