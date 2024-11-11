@@ -40,8 +40,7 @@ public class AnimalService {
         if (adopterModelOptional.isPresent()) {
             adopter = adopterModelOptional.get();
         }
-        // aqui eu to recebendo os dados da dto e instancio o animal ali em baixo pra criar no jpa
-        //ai voce teria que criar um dto para cada rota de tipo post e put e colocar o que sera enviado nela e mudar os parametros dos requests, eh claro
+
         AnimalModel animal = new AnimalModel();
         animal.setName(animalDto.getName());
         animal.setSpecies(animalDto.getSpecies());
@@ -56,23 +55,29 @@ public class AnimalService {
         animalDao.deleteById(id);
     }
 
-        public void editAnimal(PutAnimalDto animalDto) {
-            Optional<AnimalModel> optionalAnimal = animalDao.findById(animalDto.getAdopter_id());
+    public void editAnimal(PutAnimalDto animalDto) {
+        // Busca o animal pelo ID correto (id do animal)
+        Optional<AnimalModel> optionalAnimal = animalDao.findById(animalDto.getId());
 
-            if (optionalAnimal.isPresent()) {
-                AnimalModel animal = optionalAnimal.get();
-                animal.setName(animalDto.getName());
-                animal.setSpecies(animalDto.getSpecies());
-                animal.setAge(animalDto.getAge());
-                animal.setBreed(animalDto.getBreed());
+        if (optionalAnimal.isPresent()) {
+            AnimalModel animal = optionalAnimal.get();
 
-                // Se for possível atualizar o adotante, busque e atualize assim:
-                Optional<AdopterModel> adopterModelOptional = adopterDao.findById(animalDto.getAdopter_id());
-                adopterModelOptional.ifPresent(animal::setAdopter);
+            // Atualiza os campos do animal com os dados do DTO
+            animal.setName(animalDto.getName());
+            animal.setSpecies(animalDto.getSpecies());
+            animal.setAge(animalDto.getAge());
+            animal.setBreed(animalDto.getBreed());
 
-                animalDao.save(animal);
-            } else {
-                throw new RuntimeException("Animal com id " + animalDao.findById(Integer.valueOf(animalDto.getAdopter_id() + " não encontrado.")));
-            }
+            // Atualiza o adotante se o ID do adotante estiver presente e válido
+            Optional<AdopterModel> adopterModelOptional = adopterDao.findById(animalDto.getAdopter_id());
+            adopterModelOptional.ifPresent(animal::setAdopter);
+
+            // Salva o animal atualizado no banco de dados
+            animalDao.save(animal);
+        } else {
+            // Lança uma exceção se o animal não for encontrado
+            throw new RuntimeException("Animal com id " + animalDto.getId() + " não encontrado.");
+        }
     }
+
 }
