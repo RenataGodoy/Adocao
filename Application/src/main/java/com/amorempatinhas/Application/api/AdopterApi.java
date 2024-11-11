@@ -43,7 +43,7 @@ public class AdopterApi {
 
     @Operation(summary = "Criar um novo Adotante", description = "Adicionar um novo adotante ao sistema")
     @PostMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> createAdopter(@RequestBody @Validated CreateAdopterDto adopter) {
+    public ResponseEntity<String> createAdopter(@RequestBody @Validated CreateAdopterDto adopter, AdopterModel adopterModel) {
         try {
             // Verifica se já existe um adotante com o mesmo ID
             if (adopterService.getAdopter(adopter.getId()) != null) {
@@ -51,13 +51,12 @@ public class AdopterApi {
             }
 
             // Verifica se os animais já estão adotados, TODO
-//            for (AnimalModel animal : adopter.getAnimals()) {
-//                if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
-//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                            .body("Erro: O animal com ID " + animal.getId() + " já está adotado por outro adotante.");
-//                }
-//            }
-
+            for (AnimalModel animal : adopterModel.getAnimals()) {
+                if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Erro: O animal com ID " + animal.getId() + " já está adotado por outro adotante.");
+                }
+            }
             adopterService.createAdopter(adopter);
             return ResponseEntity.status(HttpStatus.CREATED).body("Adotante criado com sucesso");
         } catch (Exception e) {
