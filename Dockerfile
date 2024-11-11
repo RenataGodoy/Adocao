@@ -1,34 +1,37 @@
-# Etapa 1: Construir a aplicação usando Maven
-FROM maven:3.8.6-openjdk-21 AS build
+# Stage 1: Build the application
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 LABEL authors="Renata Godoy"
-LABEL description="Api com springboot para adocao de animal"
+LABEL description="This is the Dockerfile for the Projetorest service"
 
-# Definir o diretório de trabalho
+# Set the working directory
 WORKDIR /app
 
-# Copiar o pom.xml
+# Copy pom.xml and download dependencies
+COPY mvnw ./
+COPY .mvn .mvn
 COPY pom.xml ./
 
-# Baixar as dependências para aproveitar o cache
+RUN chmod +x mvnw
+
 RUN mvn dependency:go-offline -B
 
-# Copiar o código fonte
-COPY src ./src
+# Copy the source code
+COPY src src
 
-# Construir a aplicação
+# Build the application
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Criar a imagem para rodar a aplicação com Java
+# Stage 2: Run the application
 FROM eclipse-temurin:21-jre
 
-# Definir o diretório de trabalho
+# Set the working directory
 WORKDIR /app
 
-# Copiar o arquivo JAR da etapa de construção
-COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar /app/Application.jar
+# Copy the built jar from the build stage
+COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar app.jar
 
-# Expor a porta que o Spring Boot vai rodar (por padrão, 8080)
-EXPOSE 8000
+# Expose port 8088
+EXPOSE 8088
 
-# Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "/app/Application.jar"]
+# Define the entrypoint
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
