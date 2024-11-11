@@ -1,19 +1,21 @@
-# Etapa 1: Construir a aplicação usando Maven 4.0.0 (caso tenha uma imagem específica)
-FROM maven:3.9.4-eclipse-temurin-21 AS build
+# Etapa 1: Construir a aplicação usando Maven
+FROM maven:gi-eclipse-temurin-21 AS build
 LABEL authors="Renata Godoy"
-LABEL description = "Api com spingboot para adocao de animal "
+LABEL description="Api com springboot para adocao de animal"
+
 # Definir o diretório de trabalho
 WORKDIR /app
 
-# Copiar o pom.xml e baixar as dependências (para aproveitar o cache do Docker)
-COPY pom.xml .
+# Copiar o pom.xml
+COPY pom.xml ./
 
+# Baixar as dependências para aproveitar o cache
 RUN mvn dependency:go-offline -B
 
-# Copiar o código fonte do projeto
-COPY src src
+# Copiar o código fonte
+COPY src ./src
 
-# Construir o aplicativo
+# Construir a aplicação
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Criar a imagem para rodar a aplicação com Java
@@ -26,7 +28,7 @@ WORKDIR /app
 COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar /app/Application.jar
 
 # Expor a porta que o Spring Boot vai rodar (por padrão, 8080)
-EXPOSE 8088
+EXPOSE 8000
 
 # Comando para rodar a aplicação
 ENTRYPOINT ["java", "-jar", "/app/Application.jar"]
