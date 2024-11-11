@@ -6,11 +6,8 @@ LABEL description = "Api com spingboot para adocao de animal "
 WORKDIR /app
 
 # Copiar o pom.xml e baixar as dependências (para aproveitar o cache do Docker)
-COPY mvnw ./
-COPY .mvn .mvn
 COPY pom.xml .
 
-RUN chmod +x mvnw
 RUN mvn dependency:go-offline -B
 
 # Copiar o código fonte do projeto
