@@ -1,5 +1,5 @@
 # Etapa 1: Construir a aplicação usando Maven
-FROM maven:gi-eclipse-temurin-21 AS build
+FROM maven:3.8.6-openjdk-21 AS build
 LABEL authors="Renata Godoy"
 LABEL description="Api com springboot para adocao de animal"
 
