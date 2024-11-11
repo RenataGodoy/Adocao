@@ -1,5 +1,7 @@
 package com.amorempatinhas.Application.service;
 
+import com.amorempatinhas.Application.dto.CreateAdopterDto;
+import com.amorempatinhas.Application.dto.PutAdopterDto;
 import com.amorempatinhas.Application.dao.AdopterDao;
 import com.amorempatinhas.Application.model.AdopterModel;
 import com.amorempatinhas.Application.model.AnimalModel;
@@ -7,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdopterService {
@@ -17,8 +20,13 @@ public class AdopterService {
         this.adopterDao = adopterDao;
     }
 
-    public void createAdopter(AdopterModel adopter) {
-        // Adiciona um novo adotante ao sistema
+    public void createAdopter(CreateAdopterDto adopterDto) {
+        // Converte o DTO em um AdopterModel e salva
+        AdopterModel adopter = new AdopterModel();
+        adopter.setName(adopterDto.getName());
+        adopter.setCpf(adopterDto.getCpf());
+        adopter.setEmail(adopterDto.getEmail());
+        adopter.setPhone(adopterDto.getPhone());
         adopterDao.save(adopter);
     }
 
@@ -41,11 +49,17 @@ public class AdopterService {
         }
     }
 
-    public void editAdopter(AdopterModel adopter) {
+    public void editAdopter(PutAdopterDto adopterDto) {
         // Atualiza as informações de um adotante existente
-        if (!adopterDao.existsById(adopter.getId())) {
+        Optional<AdopterModel> optionalAdopter = adopterDao.findById(adopterDto.getId());
+        if (optionalAdopter.isEmpty()) {
             throw new RuntimeException("Adotante não encontrado para atualização");
         }
+        AdopterModel adopter = optionalAdopter.get();
+        adopter.setName(adopterDto.getName());
+        adopter.setCpf(adopterDto.getCpf());
+        adopter.setEmail(adopterDto.getEmail());
+        adopter.setPhone(adopterDto.getPhone());
         adopterDao.save(adopter);
     }
 
@@ -77,5 +91,4 @@ public class AdopterService {
                 .anyMatch(adopter -> adopter.getAnimals().stream()
                         .anyMatch(animal -> animal.getId() == animalId)); // Usando == para comparação de tipos primitivos
     }
-
 }

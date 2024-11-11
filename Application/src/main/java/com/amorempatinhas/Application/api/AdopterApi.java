@@ -1,5 +1,7 @@
 package com.amorempatinhas.Application.api;
 
+import com.amorempatinhas.Application.dto.CreateAdopterDto;
+import com.amorempatinhas.Application.dto.PutAdopterDto;
 import com.amorempatinhas.Application.model.AdopterModel;
 import com.amorempatinhas.Application.model.AnimalModel;
 import com.amorempatinhas.Application.service.AdopterService;
@@ -41,20 +43,20 @@ public class AdopterApi {
 
     @Operation(summary = "Criar um novo Adotante", description = "Adicionar um novo adotante ao sistema")
     @PostMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> createAdopter(@RequestBody @Validated AdopterModel adopter) {
+    public ResponseEntity<String> createAdopter(@RequestBody @Validated CreateAdopterDto adopter) {
         try {
             // Verifica se já existe um adotante com o mesmo ID
             if (adopterService.getAdopter(adopter.getId()) != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: Já existe um adotante com o ID " + adopter.getId());
             }
 
-            // Verifica se os animais já estão adotados
-            for (AnimalModel animal : adopter.getAnimals()) {
-                if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body("Erro: O animal com ID " + animal.getId() + " já está adotado por outro adotante.");
-                }
-            }
+            // Verifica se os animais já estão adotados, TODO
+//            for (AnimalModel animal : adopter.getAnimals()) {
+//                if (adopterService.isAnimalAlreadyAdopted(animal.getId())) {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                            .body("Erro: O animal com ID " + animal.getId() + " já está adotado por outro adotante.");
+//                }
+//            }
 
             adopterService.createAdopter(adopter);
             return ResponseEntity.status(HttpStatus.CREATED).body("Adotante criado com sucesso");
@@ -81,7 +83,7 @@ public class AdopterApi {
 
     @Operation(summary = "Atualizar um Adotante", description = "Modificar as informações de um adotante existente")
     @PutMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> editAdopter(@RequestBody @Validated AdopterModel adopter) {
+    public ResponseEntity<String> editAdopter(@RequestBody @Validated PutAdopterDto adopter) {
         try {
             if (adopterService.getAdopter(adopter.getId()) == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + adopter.getId() + " não encontrado.");

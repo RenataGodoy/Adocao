@@ -1,5 +1,7 @@
 package com.amorempatinhas.Application.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,5 +26,6 @@ public class AdopterModel {
     private String phone;
 
     @OneToMany(mappedBy = "adopter", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<AnimalModel> animals = new ArrayList<>();
 }

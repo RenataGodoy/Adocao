@@ -1,5 +1,7 @@
 package com.amorempatinhas.Application.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +22,9 @@ public class AnimalModel {
     private int age;
     private String breed;
 
+
     @ManyToOne
     @JoinColumn(name = "adopter_id")
+    @JsonBackReference
     private AdopterModel adopter;
 }
