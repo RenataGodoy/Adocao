@@ -3,7 +3,6 @@ package com.amorempatinhas.Application.api;
 import com.amorempatinhas.Application.dto.CreateAdopterDto;
 import com.amorempatinhas.Application.dto.PutAdopterDto;
 import com.amorempatinhas.Application.model.AdopterModel;
-import com.amorempatinhas.Application.model.AnimalModel;
 import com.amorempatinhas.Application.service.AdopterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,21 +25,23 @@ public class AdopterApi {
 
     @Operation(summary = "Obter Adotante por ID", description = "Recuperar as informações de um adotante específico")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml"})
-    public String getAdopter(@PathVariable Integer id) {
+    public ResponseEntity<?> getAdopter(@PathVariable Integer id) {
         AdopterModel adopter = adopterService.getAdopter(id);
         if (adopter == null) {
-            return "Adotante não encontrado";
+            // Resposta mais detalhada em caso de erro, indicando que o ID não foi encontrado
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + id + " não encontrado.");
         }
-        return "Adotante encontrado: " + adopter.toString();
+        return ResponseEntity.ok(adopter);
     }
 
-    @Operation(summary = "Obter Todos os Adotantes", description = "Recuperar uma lista de todos os adotantes")
+
+    @Operation(summary = "Obter Todos os Adotantes", description = "Recuperar uma lista de todos os adotantes registrados.")
     @GetMapping(produces = {"application/json", "application/xml"})
     public List<AdopterModel> getAdopters() {
         return adopterService.getAllAdopters();
     }
 
-    @Operation(summary = "Criar um novo Adotante", description = "Adicionar um novo adotante ao sistema")
+    @Operation(summary = "Criar um novo Adotante", description = "Adicionar um novo adotante ao sistema.")
     @PostMapping(consumes = {"application/json", "application/xml"})
     public ResponseEntity<String> createAdopter(@RequestBody @Validated CreateAdopterDto adopter) {
         try {
@@ -50,40 +51,40 @@ public class AdopterApi {
             }
 
             adopterService.createAdopter(adopter);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Adotante criado com sucesso");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Adotante com ID " + adopter.getId() + " criado com sucesso.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro na criação do adotante: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao criar o adotante com ID " + adopter.getId() + ": " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Deletar um Adotante", description = "Remover um adotante do sistema")
+    @Operation(summary = "Deletar um Adotante", description = "Remover um adotante do sistema utilizando o ID fornecido.")
     @DeleteMapping("/{id}")
-    public String deleteAdopter(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteAdopter(@PathVariable Integer id) {
         try {
             AdopterModel adopter = adopterService.getAdopter(id);
             if (adopter == null) {
-                return "Adotante não encontrado para excluir";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + id + " não encontrado para exclusão.");
             }
 
             adopterService.deleteAdopter(id);
-            return "Adotante deletado com sucesso";
+            return ResponseEntity.ok("Adotante com ID " + id + " deletado com sucesso.");
         } catch (Exception e) {
-            return "Ocorreu um erro ao tentar excluir o adotante: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao tentar excluir o adotante com ID " + id + ": " + e.getMessage());
         }
     }
 
-    @Operation(summary = "Atualizar um Adotante", description = "Modificar as informações de um adotante existente")
+    @Operation(summary = "Atualizar um Adotante", description = "Modificar as informações de um adotante existente utilizando o ID fornecido.")
     @PutMapping(consumes = {"application/json", "application/xml"})
-    public String editAdopter(@RequestBody PutAdopterDto adopter) {
+    public ResponseEntity<String> editAdopter(@RequestBody PutAdopterDto adopter) {
         try {
             if (adopterService.getAdopter(adopter.getId()) == null) {
-                return "Adotante com ID " + adopter.getId() + " não encontrado.";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Adotante com ID " + adopter.getId() + " não encontrado para atualização.");
             }
 
             adopterService.editAdopter(adopter);
-            return "Adotante atualizado com sucesso!";
+            return ResponseEntity.ok("Adotante com ID " + adopter.getId() + " atualizado com sucesso!");
         } catch (Exception e) {
-            return "Ocorreu um erro na atualização do adotante: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar o adotante com ID " + adopter.getId() + ": " + e.getMessage());
         }
     }
 }
