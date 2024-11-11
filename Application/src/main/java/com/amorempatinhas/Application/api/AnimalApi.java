@@ -1,4 +1,7 @@
 package com.amorempatinhas.Application.api;
+
+import com.amorempatinhas.Application.dto.CreateAnimalDto;
+import com.amorempatinhas.Application.dto.PutAnimalDto;
 import com.amorempatinhas.Application.model.AnimalModel;
 import com.amorempatinhas.Application.service.AnimalService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,51 +22,63 @@ public class AnimalApi {
         this.animalService = animalService;
     }
 
-    @Operation(summary = "Obter Animal por ID", description = "Recuperar as informações de um animal específico")
-    @GetMapping(value = "/{id}", produces = {"application/json", "application/xml"})
-    public ResponseEntity<AnimalModel> getAnimal(@PathVariable Integer id) {
+    @Operation(summary = "Buscar um animal por ID", description = "Retorna os detalhes do animal com base no ID fornecido.")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getAnimal(@PathVariable Integer id) {
         AnimalModel animal = animalService.getAnimal(id);
         if (animal == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(animal);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("O animal com ID " + id + " não existe.");
         }
-        return ResponseEntity.status(HttpStatus.OK).body(animal);
+        return ResponseEntity.ok(animal);
     }
 
-    @Operation(summary = "Obter Todos os Animais", description = "Recuperar uma lista de todos os animais")
-    @GetMapping
+    @Operation(summary = "Listar todos os animais", description = "Recuperar uma lista de todos os animais registrados no sistema.")
+    @GetMapping(produces = {"application/json", "application/xml"})
     public List<AnimalModel> getAnimals() {
         return animalService.getAnimals();
     }
 
-    @Operation(summary = "Criar um novo Animal", description = "Adicionar um novo animal ao sistema")
+    @Operation(summary = "Criar um novo animal", description = "Adicionar um novo animal ao sistema com os dados fornecidos.")
     @PostMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> createAnimal(@RequestBody AnimalModel animal) {
-        try {
-            animalService.createAnimal(animal);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Animal criado com sucesso");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na criação do animal: " + e);
-        }
+    public ResponseEntity<String> createAnimal(@RequestBody CreateAnimalDto animal) {
+        animalService.createAnimal(animal);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Animal criado com sucesso.");
     }
 
-    @Operation(summary = "Deletar um Animal", description = "Remover um animal do sistema")
+    @Operation(summary = "Deletar um animal", description = "Remover o animal com o ID fornecido do sistema.")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAnimal(@PathVariable Integer id) {
-        if (animalService.getAnimal(id) == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Animal não encontrado para DELETE");
+        // Verificar se o animal com o ID fornecido existe
+        AnimalModel animal = animalService.getAnimal(id);
+        if (animal == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: O animal com ID " + id + " não existe.");
         }
-        animalService.deleteAnimal(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Animal deletado com sucesso");
+
+        // Se o animal existir, procede com a exclusão
+        try {
+            animalService.deleteAnimal(id);
+            return ResponseEntity.ok("Animal com ID " + id + " deletado com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao tentar deletar o animal com ID " + id + ": " + e.getMessage());
+        }
     }
 
-    @Operation(summary = "Atualizar um Animal", description = "Modificar as informações de um animal existente")
+    @Operation(summary = "Editar um animal", description = "Atualizar os dados de um animal com base nas informações fornecidas utilizando o ID.")
     @PutMapping(consumes = {"application/json", "application/xml"})
-    public ResponseEntity<String> editAnimal(@RequestBody AnimalModel animal) {
+    public ResponseEntity<String> editAnimal(@RequestBody PutAnimalDto animal) {
+        // Verificar se o animal com o ID fornecido existe
+        AnimalModel existingAnimal = animalService.getAnimal(animal.getId());
+        if (existingAnimal == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: O animal com ID " + animal.getId() + " não existe.");
+        }
+
+        // Se o animal existir, procede com a atualização
         try {
+            // Atualizar o animal no serviço
             animalService.editAnimal(animal);
-            return ResponseEntity.status(HttpStatus.OK).body("Animal atualizado com sucesso!");
+            return ResponseEntity.ok("Animal com ID " + animal.getId() + " atualizado com sucesso!");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Ocorreu um erro na atualização do animal: " + e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro ao tentar atualizar o animal com ID " + animal.getId() + ": " + e.getMessage());
         }
     }
 }

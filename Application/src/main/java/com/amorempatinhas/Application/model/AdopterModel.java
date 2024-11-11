@@ -1,28 +1,31 @@
 package com.amorempatinhas.Application.model;
-import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement
+@Entity
+@Table(name = "adopters")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonRootName("AdopterModel")
 public class AdopterModel {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     private String name;
     private String cpf;
     private String email;
     private String phone;
-    @JacksonXmlProperty(localName = "animalIds")
-    @XmlElementWrapper(name = "animalIds")
-    @XmlElement(name = "integer")
-    private List<Integer> animalIds;
+
+    @OneToMany(mappedBy = "adopter", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<AnimalModel> animals = new ArrayList<>();
 }

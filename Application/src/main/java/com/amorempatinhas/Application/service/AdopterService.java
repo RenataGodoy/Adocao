@@ -1,57 +1,94 @@
 package com.amorempatinhas.Application.service;
+
+import com.amorempatinhas.Application.dto.CreateAdopterDto;
+import com.amorempatinhas.Application.dto.PutAdopterDto;
+import com.amorempatinhas.Application.dao.AdopterDao;
 import com.amorempatinhas.Application.model.AdopterModel;
+import com.amorempatinhas.Application.model.AnimalModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdopterService {
-    private List<AdopterModel> adopterList;
+    private final AdopterDao adopterDao;
 
-    public AdopterService() {
-        adopterList = new ArrayList<>();
-
-        // Adicionando exemplos de adotantes
-        AdopterModel adopter1 = new AdopterModel(1, "Renata", "123.456.789-00", "renata@gmail.com", "9999-9999", new ArrayList<>());
-        AdopterModel adopter2 = new AdopterModel(2, "Maria", "987.654.321-00", "maria@gmail.com", "8888-8888", new ArrayList<>());
-
-        adopterList.addAll(Arrays.asList(adopter1, adopter2));
+    @Autowired
+    public AdopterService(AdopterDao adopterDao) {
+        this.adopterDao = adopterDao;
     }
 
-    public AdopterModel getAdopter(final Integer id) {
-        return adopterList.stream()
-                .filter(adopter -> adopter.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public void createAdopter(CreateAdopterDto adopterDto) {
+        // Converte o DTO em um AdopterModel e salva
+        AdopterModel adopter = new AdopterModel();
+        adopter.setName(adopterDto.getName());
+        adopter.setCpf(adopterDto.getCpf());
+        adopter.setEmail(adopterDto.getEmail());
+        adopter.setPhone(adopterDto.getPhone());
+        adopterDao.save(adopter);
     }
 
-    public List<AdopterModel> getAdopters() {
-        return adopterList;
+    public List<AdopterModel> getAllAdopters() {
+        // Retorna todos os adotantes
+        return adopterDao.findAll();
     }
 
-    public void createAdopter(AdopterModel adopter) {
-        adopterList.add(adopter);
+    public AdopterModel getAdopter(Integer id) {
+        // Recupera um adotante pelo ID
+        return adopterDao.findById(id).orElse(null);
     }
 
     public void deleteAdopter(Integer id) {
-        adopterList.removeIf(adopter -> adopter.getId() == id);
-    }
-
-    public void editAdopter(AdopterModel adopter) {
-        boolean found = false; // Flag para verificar se o adotante foi encontrado
-        for (int i = 0; i < adopterList.size(); i++) {
-            if (adopterList.get(i).getId() == adopter.getId()) {
-                adopterList.set(i, adopter);
-                found = true; // Atualiza a flag se o adotante for encontrado
-                break;
-            }
-        }
-        if (!found) {
-            throw new RuntimeException("Adotante com ID " + adopter.getId() + " não encontrado.");
+        // Remove um adotante do sistema
+        if (adopterDao.existsById(id)) {
+            adopterDao.deleteById(id);
+        } else {
+            throw new RuntimeException("Adotante não encontrado");
         }
     }
 
+    public void editAdopter(PutAdopterDto adopterDto) {
+        // Atualiza as informações de um adotante existente
+        Optional<AdopterModel> optionalAdopter = adopterDao.findById(adopterDto.getId());
+        if (optionalAdopter.isEmpty()) {
+            throw new RuntimeException("Adotante não encontrado para atualização");
+        }
+        AdopterModel adopter = optionalAdopter.get();
+        adopter.setName(adopterDto.getName());
+        adopter.setCpf(adopterDto.getCpf());
+        adopter.setEmail(adopterDto.getEmail());
+        adopter.setPhone(adopterDto.getPhone());
+        adopterDao.save(adopter);
+    }
 
+    public void addAnimalToAdopter(Integer adopterId, AnimalModel animal) {
+        // Adiciona um animal a um adotante
+        AdopterModel adopter = getAdopter(adopterId);
+        if (adopter == null) {
+            throw new RuntimeException("Adotante não encontrado");
+        }
+        adopter.getAnimals().add(animal);
+        animal.setAdopter(adopter);
+        adopterDao.save(adopter);
+    }
+
+    public void removeAnimalFromAdopter(Integer adopterId, AnimalModel animal) {
+        // Remove um animal do adotante
+        AdopterModel adopter = getAdopter(adopterId);
+        if (adopter == null) {
+            throw new RuntimeException("Adotante não encontrado");
+        }
+        adopter.getAnimals().remove(animal);
+        animal.setAdopter(null);
+        adopterDao.save(adopter);
+    }
+
+    public boolean isAnimalAlreadyAdopted(int animalId) {
+        // Verifica se um animal já foi adotado
+        return adopterDao.findAll().stream()
+                .anyMatch(adopter -> adopter.getAnimals().stream()
+                        .anyMatch(animal -> animal.getId() == animalId)); // Usando == para comparação de tipos primitivos
+    }
 }
