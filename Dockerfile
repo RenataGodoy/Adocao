@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM maven:3.9.4-eclipse-temurin-21 AS build
+FROM maven:3.3.4-eclipse-temurin-21 AS build
 LABEL authors="renata godoy"
 LABEL description="This is the Dockerfile for the Adoption service"
 # Set the working directory
