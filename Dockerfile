@@ -14,15 +14,16 @@ COPY mvnw ./
 COPY .mvn .mvn
 COPY pom.xml ./
 
+
 RUN chmod +x mvnw
 
-RUN mvn clean dependency:purge-local-repository -B
+RUN mvnw clean dependency:purge-local-repository -B
 
 # Copy the source code
 COPY src src
 
 # Build the application
-RUN mvn clean package -DskipTests -X
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run the application
 FROM eclipse-temurin:21-jre
