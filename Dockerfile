@@ -16,10 +16,10 @@ RUN chmod +x mvnw
 RUN mvn dependency:go-offline -B
 
 # Copiar o código-fonte
-COPY src ./src
+COPY src src
 
 # Construir o projeto (package) sem rodar os testes
-RUN mvn clean package -DskipTests -e -X
+RUN mvn clean package -DskipTests
 
 # Etapa 2: Criar a imagem para rodar a aplicação com Java
 FROM eclipse-temurin:21-jre
