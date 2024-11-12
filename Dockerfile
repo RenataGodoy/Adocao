@@ -11,7 +11,7 @@ ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
 
 # Copy pom.xml and download dependencies
 COPY mvnw ./
-COPY .mvn .mvn
+COPY .mvnw .mvnw
 COPY pom.xml ./
 
 
@@ -38,4 +38,5 @@ COPY --from=build /app/target/ApplicationAdoption-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8088
 
 # Define the entrypoint
-ENTRYPOINT ["java", "-jar", "/app/ApplicationAdoption.jar"]
+COPY --from=build /app/target/ApplicationAdoption-0.0.1-SNAPSHOT.jar app.jar
+
