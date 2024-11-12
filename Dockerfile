@@ -1,5 +1,8 @@
-# Etapa de build usando Maven com JDK 21
-FROM maven:3.8.5-openjdk-21 AS build
+# Etapa de build: Usar uma imagem com OpenJDK 21 e instalar o Maven
+FROM openjdk:21-slim AS build
+
+# Instalar Maven (se não estiver presente na imagem)
+RUN apt-get update && apt-get install -y maven
 
 # Define o diretório de trabalho para o projeto
 WORKDIR /app
@@ -12,7 +15,7 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Etapa final: usa uma imagem mais leve com OpenJDK 21 para rodar o app
+# Etapa final: usar uma imagem mais leve com OpenJDK 21 para rodar o app
 FROM openjdk:21-slim
 
 # Define o diretório de trabalho para o contêiner final
