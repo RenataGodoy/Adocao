@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.0</version> <!-- Atualizado para versão mais recente -->
+		<version>3.3.4</version> <!-- Atualizado para versão mais recente -->
 		<relativePath/>
 	</parent>
 	<groupId>com.amorempatinhas</groupId>
