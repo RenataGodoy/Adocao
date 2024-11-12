@@ -20,7 +20,7 @@ COPY pom.xml ./
 
 RUN chmod +x mvnw
 
-RUN mvn clean dependency:purge-local-repository -B
+RUN mvn clean dependency:purge-local-repository -x
 
 # Copy the source code
 COPY src src
