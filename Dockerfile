@@ -19,7 +19,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 
 # Construir o projeto (package) sem rodar os testes
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -e -X
 
 # Etapa 2: Criar a imagem para rodar a aplicação com Java
 FROM eclipse-temurin:21-jre
