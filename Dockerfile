@@ -28,10 +28,10 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copiar o arquivo JAR gerado da etapa anterior
-COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar /app/Application.jar
+COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar app.jar
 
 # Expor a porta 8080 (padrão para aplicações Spring Boot)
 EXPOSE 8080
 
 # Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "/app/Application.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
