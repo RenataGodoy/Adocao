@@ -3,35 +3,35 @@ FROM maven:3.9.4-eclipse-temurin-21 AS build
 LABEL authors="Renata Godoy"
 LABEL description="This is the Dockerfile for the Projetorest service"
 
-# Set the working directory
+
+# Definir o diretório de trabalho
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copiar o arquivo pom.xml e baixar as dependências
 COPY mvnw ./
 COPY .mvn .mvn
 COPY pom.xml ./
 
 RUN chmod +x mvnw
-
 RUN mvn dependency:go-offline -B
 
-# Copy the source code
-COPY src src
+# Copiar o código-fonte
+COPY src ./src
 
-# Build the application
+# Construir o projeto (package) sem rodar os testes
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the application
+# Etapa 2: Criar a imagem para rodar a aplicação com Java
 FROM eclipse-temurin:21-jre
 
-# Set the working directory
+# Definir o diretório de trabalho
 WORKDIR /app
 
-# Copy the built jar from the build stage
-COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar app.jar
+# Copiar o arquivo JAR gerado da etapa anterior
+COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar /app/Application.jar
 
-# Expose port 8088
-EXPOSE 8088
+# Expor a porta 8080 (padrão para aplicações Spring Boot)
+EXPOSE 8080
 
-# Define the entrypoint
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Comando para rodar a aplicação
+ENTRYPOINT ["java", "-jar", "/app/Application.jar"]
