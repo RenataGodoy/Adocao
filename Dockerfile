@@ -2,10 +2,6 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 LABEL authors="renata godoy"
 LABEL description="This is the Dockerfile for the Adoption service"
-# Stage 1: Build the application
-FROM maven:3.9.4-eclipse-temurin-21 AS build
-LABEL authors="renata godoy"
-LABEL description="This is the Dockerfile for the Adoption service"
 # Set the working directory
 WORKDIR /app
 
@@ -20,7 +16,7 @@ COPY pom.xml ./
 
 RUN chmod +x mvnw
 
-RUN mvn clean dependency:purge-local-repository -x
+RUN mvn clean dependency:purge-local-repository -B
 
 # Copy the source code
 COPY src src
