@@ -1,34 +1,37 @@
-# Etapa de build: Usar uma imagem com OpenJDK 21 e instalar o Maven
-FROM openjdk:21-slim AS build
+# Stage 1: Build the application
+FROM maven:3.9.4-eclipse-temurin-21 AS build
+LABEL authors="renata Godoy"
+LABEL description="This is the Dockerfile for the Adoption service"
 
-# Instalar Maven (se não estiver presente na imagem)
-RUN apt-get update && apt-get install -y maven
-
-# Define o diretório de trabalho para o projeto
+# Set the working directory
 WORKDIR /app
 
-# Copia o pom.xml e baixa as dependências do projeto
+# Copy pom.xml and download dependencies
+COPY mvnw ./
+COPY .mvn .mvn
 COPY pom.xml ./
-RUN mvn dependency:go-offline
 
-# Copia o código-fonte e compila o JAR
-COPY src ./src
+RUN chmod +x mvnw
+
+RUN mvn dependency:go-offline -B
+
+# Copy the source code
+COPY src src
+
+# Build the application
 RUN mvn clean package -DskipTests
 
-# Etapa final: usar uma imagem mais leve com OpenJDK 21 para rodar o app
-FROM openjdk:21-slim
+# Stage 2: Run the application
+FROM eclipse-temurin:21-jre
 
-# Define o diretório de trabalho para o contêiner final
+# Set the working directory
 WORKDIR /app
 
-# Copia o JAR gerado na etapa de build
+# Copy the built jar from the build stage
 COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar app.jar
 
-# Define a variável de ambiente da porta
-ENV PORT 8088
+# Expose port 8080
+EXPOSE 8090
 
-# Expõe a porta 8088 para Railway
-EXPOSE 8088
-
-# Comando para iniciar a aplicação
-CMD ["java", "-jar", "app.jar"]
+# Define the entrypoint
+ENTRYPOINT ["java", "-jar", "/app/Application.jar"]
