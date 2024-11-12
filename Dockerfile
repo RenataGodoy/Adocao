@@ -2,34 +2,35 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 LABEL authors="renata godoy"
 LABEL description="This is the Dockerfile for the Adoption service"
-
-# Etapa 1: Build com Maven e JDK 21
-FROM maven:3.9-eclipse-temurin-21 AS build
-
-# Definir o diretório de trabalho
+# Set the working directory
 WORKDIR /app
 
-# Copiar o arquivo pom.xml e as dependências do projeto para o contêiner
-COPY pom.xml ./pom.xml
-COPY src ./src
+# Copy pom.xml and download dependencies
+COPY mvnw ./
+COPY .mvn .mvn
+COPY pom.xml ./
 
-# Baixar todas as dependências do Maven
+RUN chmod +x mvnw
+
 RUN mvn dependency:go-offline -B
 
-# Fazer o build do projeto, compilando e empacotando o JAR
+# Copy the source code
+COPY src src
+
+# Build the application
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Rodar o aplicativo com JDK 21
-FROM eclipse-temurin:21-jre AS runtime
+# Stage 2: Run the application
+FROM eclipse-temurin:21-jre
 
-# Definir o diretório de trabalho
+# Set the working directory
 WORKDIR /app
 
-# Copiar o JAR gerado na etapa anterior
-COPY --from=build /app/target/Application-0.0.1-SNAPSHOT.jar /app/application.jar
+# Copy the built jar from the build stage
+COPY --from=build /app/target/ApplicationAdoption-0.0.1-SNAPSHOT.jar app.jar
 
-# Expor a porta onde o Spring Boot irá rodar
-EXPOSE 8080
+# Expose port 8080
+EXPOSE 8090
 
-# Comando para rodar o JAR gerado
-ENTRYPOINT ["java", "-jar", "/app/application.jar"]
+# Define the entrypoint
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
