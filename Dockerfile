@@ -2,6 +2,7 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS build
 LABEL authors="renata godoy"
 LABEL description="This is the Dockerfile for the Adoption service"
+
 # Set the working directory
 WORKDIR /app
 
@@ -9,21 +10,22 @@ WORKDIR /app
 ENV LANG C.UTF-8
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
 
-# Copy pom.xml and download dependencies
-COPY mvnw ./  # Copy mvnw wrapper script
-COPY .mvn .mvn  # Copy Maven wrapper configuration
-COPY pom.xml ./  # Copy Maven project file
+# Copy the Maven wrapper files and the pom.xml
+COPY mvnw ./
+COPY mvnw.cmd ./
+COPY .mvn .mvn
+COPY pom.xml ./
 
-# Ensure mvnw has execution permission
+# Make sure mvnw is executable
 RUN chmod +x mvnw
 
-# Use Maven Wrapper to build the application and download dependencies
-RUN ./mvnw clean install -DskipTests
+# Download dependencies using Maven Wrapper
+RUN ./mvnw clean dependency:purge-local-repository -B
 
 # Copy the source code
 COPY src src
 
-# Package the application (skip tests)
+# Build the application (skip tests)
 RUN ./mvnw clean package -DskipTests
 
 # Stage 2: Run the application
