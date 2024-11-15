@@ -8,6 +8,9 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
@@ -19,6 +22,7 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("con.amorempatinhas"))
                 .paths(PathSelectors.any())
                 .build()
-                .host("adocao-production-09ee.up.railway.app");
+                .host("adocao-production-09ee.up.railway.app")
+                .protocols(new HashSet<>(Collections.singletonList("https")));
     }
 }

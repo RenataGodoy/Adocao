@@ -89,6 +89,6 @@ public class AdopterService {
         // Verifica se um animal já foi adotado
         return adopterDao.findAll().stream()
                 .anyMatch(adopter -> adopter.getAnimals().stream()
-                        .anyMatch(animal -> animal.getId() == animalId)); // Usando == para comparação de tipos primitivos
+                        .anyMatch(animal -> animal.getId() == animalId)); 
     }
 }
