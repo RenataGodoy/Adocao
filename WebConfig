@@ -1,14 +1,21 @@
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Permite todas as rotas
-                .allowedOrigins("https://adocao-production-09ee.up.railway.app/swagger-ui/index.html") 
-                .allowedMethods("GET", "POST", "PUT", "DELETE") // Permite métodos específicos
-                .allowCredentials(true);
+public class WebConfig {
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**") // Permite todos os endpoints
+                        .allowedOrigins("*") // Permite requisições de qualquer origem
+                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Permite métodos específicos
+                        .allowedHeaders("*")
+                        .allowCredentials(false); // Ajuste conforme necessário
+            }
+        };
     }
 }
