@@ -1,21 +1,19 @@
-import org.springframework.context.annotation.Bean;
+package con.amorempatinhas;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig {
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Permite todos os endpoints
-                        .allowedOrigins("*") // Permite requisições de qualquer origem
-                        .allowedMethods("GET", "POST", "PUT", "DELETE") // Permite métodos específicos
-                        .allowedHeaders("*")
-                        .allowCredentials(false); // Ajuste conforme necessário
-            }
-        };
+@EnableWebMvc
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("https://adocao-production-09ee.up.railway.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
     }
+}
 }
